@@ -18,7 +18,7 @@ local M = {}
 ---@param bin_fname filename
 ---@return string output of objdump dissassemble.
 local get_objdump = function(bin_fname)
-  return vim.system({ "objdump", "--disassemble", bin_fname }, { text = true }):wait().stdout
+  return vim.system({ "objdump", "--demangle", "--disassemble", bin_fname }, { text = true }):wait().stdout
 end
 
 --- Parse the DWARF info from an (exsting) ELF file.
