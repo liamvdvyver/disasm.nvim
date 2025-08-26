@@ -61,7 +61,7 @@ local parse_dwarf = function(bin_fname)
         if not ret[cur_filename][cur_line] then
           ret[cur_filename][cur_line] = {}
         end
-        ret[cur_filename][cur_line] = vim.tbl_extend("keep", ret[cur_filename][cur_line], { instruction_address })
+        ret[cur_filename][cur_line][#ret[cur_filename][cur_line] + 1] = instruction_address
       end
     end
   end
@@ -182,6 +182,7 @@ M.find_instructions = function(filename)
   for i, linenr in ipairs(get_objdump_linenrs(bin_bufnr, ins_addrs)) do
     list[i] = {
       lnum = linenr,
+      text = vim.api.nvim_buf_get_lines(bin_bufnr, linenr - 1, linenr, false)[1],
     }
   end
 
