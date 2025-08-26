@@ -132,7 +132,7 @@ M.populate_dump = function(filename)
   local dump = get_objdump(filename)
 
   vim.api.nvim_set_option_value("modifiable", true, { buf = bufnr })
-  vim.api.nvim_buf_set_lines(bufnr, 0, 0, false, vim.fn.split(dump, "\n"))
+  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.fn.split(dump, "\n"))
   vim.api.nvim_set_option_value("modifiable", false, { buf = bufnr })
   vim.api.nvim_set_option_value("buftype", "nofile", { buf = bufnr })
 end
@@ -147,6 +147,7 @@ M.open_dump = function(filename)
   local bufnr = M.state.bin_buffers[filename]
   if not bufnr then
     bufnr = M.add_file(filename)
+    M.index_dump(filename)
   end
   --Incase buffer was deleted
   M.populate_dump(filename)
@@ -165,8 +166,13 @@ M.find_instructions = function(filename)
   local winnr = M.open_dump(filename)
   local src_file = vim.api.nvim_buf_get_name(0)
   local cursor_ln = vim.api.nvim_win_get_cursor(0)[1]
-  local ins_addrs = M.state.bin_indices[filename][src_file][cursor_ln]
 
+  local bin_idx = M.state.bin_indices[filename]
+  if not bin_idx then
+    return
+  end
+
+  local ins_addrs = M.state.bin_indices[filename][src_file][cursor_ln]
   if not ins_addrs then
     return
   end
