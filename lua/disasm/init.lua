@@ -193,18 +193,18 @@ M.setup = function(_)
   vim.api.nvim_create_user_command("Disasm", function(params)
     local bin_fname = vim.fs.abspath(params.fargs[1] or M.cur_bin_fname)
     if params.bang then
-      M.populate_dump(bin_fname)
+      M.index_dump(bin_fname)
     end
     M.open_dump(bin_fname)
-  end, { nargs = "?", complete = "file" })
+  end, { nargs = "?", complete = "file", bang = true })
 
   vim.api.nvim_create_user_command("DisasmLine", function(params)
     local bin_fname = vim.fs.abspath(params.fargs[1] or M.cur_bin_fname)
     if params.bang then
-      M.populate_dump(bin_fname)
+      M.index_dump(bin_fname)
     end
     M.find_instructions(bin_fname)
-  end, { nargs = "?", complete = "file" })
+  end, { nargs = "?", complete = "file", bang = true })
 end
 
 return M
