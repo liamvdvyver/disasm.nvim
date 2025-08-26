@@ -185,7 +185,7 @@ M.find_instructions = function(filename)
       text = vim.api.nvim_buf_get_lines(bin_bufnr, linenr - 1, linenr, false)[1],
     }
     -- highlight
-    vim.api.nvim_buf_set_extmark(bin_bufnr, M.ns, linenr - 1, 0, {line_hl_group = "Search"})
+    vim.api.nvim_buf_set_extmark(bin_bufnr, M.ns, linenr - 1, 0, {line_hl_group = "QuickFixLine"})
   end
 
   -- populate loclist
