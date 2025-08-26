@@ -184,9 +184,14 @@ M.find_instructions = function(filename)
       lnum = linenr,
       text = vim.api.nvim_buf_get_lines(bin_bufnr, linenr - 1, linenr, false)[1],
     }
+    -- highlight
+    vim.api.nvim_buf_set_extmark(bin_bufnr, M.ns, linenr - 1, 0, {line_hl_group = "Search"})
   end
 
+  -- populate loclist
   vim.fn.setloclist(winnr, list, "r")
+
+  -- scroll to first match
   vim.api.nvim_win_set_cursor(winnr, { list[1].lnum, 0 })
 end
 
@@ -206,6 +211,9 @@ M.setup = function(_)
     end
     M.find_instructions(bin_fname)
   end, { nargs = "?", complete = "file", bang = true })
+
+  M.ns = vim.api.nvim_create_namespace("Disasm")
+
 end
 
 return M
