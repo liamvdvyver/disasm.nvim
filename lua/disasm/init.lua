@@ -21,6 +21,12 @@ local get_objdump = function(bin_fname)
   return vim.system({ "objdump", "--demangle", "--disassemble", bin_fname }, { text = true }):wait().stdout
 end
 
+---Notify that the binary contains no debug symbols.
+---@param bin_fname filename
+local warn_nodebug = function(bin_fname)
+  vim.notify("Disasm: " .. bin_fname .. " has no debug symbols.")
+end
+
 --- Parse the DWARF info from an (exsting) ELF file.
 --- @param bin_fname filename
 --- @return bin_instruction_index
@@ -64,6 +70,11 @@ local parse_dwarf = function(bin_fname)
         ret[cur_filename][cur_line][#ret[cur_filename][cur_line] + 1] = instruction_address
       end
     end
+  end
+
+  if not next(ret) then
+    warn_nodebug(bin_fname)
+    return ret
   end
 
   -- sort
@@ -168,11 +179,17 @@ M.find_instructions = function(filename)
   local cursor_ln = vim.api.nvim_win_get_cursor(0)[1]
 
   local bin_idx = M.state.bin_indices[filename]
-  if not bin_idx then
+  if not next(bin_idx) then
+    warn_nodebug(filename)
     return
   end
 
-  local ins_addrs = M.state.bin_indices[filename][src_file][cursor_ln]
+  local file_idx = bin_idx[src_file]
+  if not file_idx then
+    return
+  end
+
+  local ins_addrs = file_idx[cursor_ln]
   if not ins_addrs then
     return
   end
@@ -185,7 +202,7 @@ M.find_instructions = function(filename)
       text = vim.api.nvim_buf_get_lines(bin_bufnr, linenr - 1, linenr, false)[1],
     }
     -- highlight
-    vim.api.nvim_buf_set_extmark(bin_bufnr, M.ns, linenr - 1, 0, {line_hl_group = "QuickFixLine"})
+    vim.api.nvim_buf_set_extmark(bin_bufnr, M.ns, linenr - 1, 0, { line_hl_group = "QuickFixLine" })
   end
 
   -- populate loclist
@@ -195,7 +212,14 @@ M.find_instructions = function(filename)
   vim.api.nvim_win_set_cursor(winnr, { list[1].lnum, 0 })
 end
 
-M.setup = function(_)
+-- default
+M.opts = {
+  auto_dump_ELF = true,
+}
+
+M.setup = function(opts)
+  M.opts = vim.tbl_extend("force", M.opts, { opts })
+
   vim.api.nvim_create_user_command("Disasm", function(params)
     local bin_fname = vim.fs.abspath(params.fargs[1] or M.cur_bin_fname)
     if params.bang then
@@ -213,7 +237,6 @@ M.setup = function(_)
   end, { nargs = "?", complete = "file", bang = true })
 
   M.ns = vim.api.nvim_create_namespace("Disasm")
-
 end
 
 return M
