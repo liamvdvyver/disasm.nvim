@@ -184,7 +184,7 @@ M.find_instructions = function(filename)
     return
   end
 
-  local file_idx = bin_idx[src_file]
+  local file_idx = bin_idx[src_file] or bin_idx[vim.fs.basename(src_file)]
   if not file_idx then
     return
   end
